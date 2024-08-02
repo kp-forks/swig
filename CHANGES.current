@@ -7,6 +7,64 @@ the issue number to the end of the URL: https://github.com/swig/swig/issues/
 Version 4.3.0 (in progress)
 ===========================
 
+2024-08-02: vadz
+	    [Python] #2966 Fix overloaded Doxygen comments. Sometimes the Doxygen
+            comments were not combined into one Pydoc comment.
+
+2024-08-01: olly
+	    Fix wrapping of string constants containing bytes 0-8, 11, 12 or
+	    14-31 followed by a digit '0' to '7'.  We were emitting these bytes
+	    as a one or two character octal escape sequence which when
+	    interpreted would include the following character.
+
+2024-07-27: olly
+	    #2087 Fix parsing of `noexcept` on a function pointer type used
+	    as the type of a function parameter.  We currently generate
+	    invalid C++ code if we try to wrap the function parameter, but
+	    at least the user can `%ignore` the parameter or the whole
+	    function, whereas the parse error was hard to work around.
+
+2024-07-26: olly
+	    Support parsing `noexcept(X)` in expressions, including deducing
+	    its type (which is always `bool`).
+
+2024-07-21: wsfulton
+	    [Python] Add missing slot for init in struct _specialization_cache
+            needed for python-3.13 builtin wrappers.
+
+2024-07-21: shadchin
+	    [Python] #2968 Add missing tp_versions_used slot needed for python-3.13.
+
+2024-07-19: olly
+	    -Wallkw now includes keywords for Javascript.
+
+2024-07-19: vadz
+	    [Javascript] #2940 Names of object properties can be keywords in
+	    Javascript so don't auto-rename them to have a leading underscore.
+
+2024-07-18: olly
+	    #1917 Stop removing `f` and `F` suffixes from float literals.
+	    This was resulting in incorrect generated C# and Java code.  For
+	    some cases such as `#define CONSTANT 1.0f` this was a regression
+	    introduced in 4.2.0 when we started more correctly wrapping these
+	    as `float` rather than `double`.
+
+2024-07-15: vadz
+            #2941 Suppress warning WARN_PARSE_USING_UNDEF for ignored using declarations.
+
+2024-07-03: wsfulton
+            #2860 Enhance Windows.html documentation for the popular Visual C++ compiler
+            recommending users to correctly set the __cplusplus macro in order to benefit
+            from modern standards based features that SWIG provides.
+
+2024-07-02: erezgeva
+	    [Python, Ruby] #2870 Change the thread safety options for the director code
+            that manages C++ director pointer ownership. Please define SWIG_THREADS to
+            turn on thread safety. For Python, this can also be done via the threads
+            module option or -threads. Implementation now includes a C++11 std::mutex option
+            as priority over WIN32 and pthread mutexes. See director_guard.swg for further
+            implementation details.
+
 2024-06-28: vadz
             #2935 Fix instantiation of specialized template where the primary template
             is a forward class template declaration.

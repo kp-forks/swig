@@ -1242,6 +1242,7 @@ static Node *nested_forward_declaration(const String *storage, const String *kin
     Setattr(n, "name", sname);
     Setattr(n, "storage", storage);
     Setattr(n, "sym:weak", "1");
+    SetFlag(n, "nested:forward");
     add_symbols(n);
     nn = n;
   }
@@ -2905,7 +2906,7 @@ template_directive: SWIGTEMPLATE LPAREN idstringopt RPAREN idcolonnt LESSTHAN va
                       if (GetFlag(nn, "instantiate")) {
 			Delattr(nn, "instantiate");
 			{
-			  int nnisclass = (Strcmp(Getattr(nn, "templatetype"), "class") == 0); /* if not a class template it is a function template */
+			  int nnisclass = (Strcmp(Getattr(nn, "templatetype"), "class") == 0); /* class template not a classforward nor function template */
 			  Parm *tparms = Getattr(nn, "templateparms");
 			  int specialized = !tparms; /* fully specialized (an explicit specialization) */
 			  String *tname = Copy(idcolonnt);
@@ -2959,6 +2960,16 @@ template_directive: SWIGTEMPLATE LPAREN idstringopt RPAREN idcolonnt LESSTHAN va
 			    Setattr(templnode, "nested:outer", outer_class);
 			  }
                           add_symbols_copy(templnode);
+
+			  if (Equal(nodeType(templnode), "classforward") && !(GetFlag(templnode, "feature:ignore") || GetFlag(templnode, "hidden"))) {
+			    SWIG_WARN_NODE_BEGIN(templnode);
+			    /* A full template class definition is required in order to wrap a template class as a proxy class so this %template is ineffective. */
+			    if (GetFlag(templnode, "nested:forward"))
+			      Swig_warning(WARN_PARSE_TEMPLATE_NESTED, cparse_file, cparse_line, "Unsupported template nested class '%s' cannot be used to instantiate a full template class with name '%s'.\n", Swig_name_decl(templnode), Getattr(templnode, "sym:name"));
+			    else
+			      Swig_warning(WARN_PARSE_TEMPLATE_FORWARD, cparse_file, cparse_line, "Template forward class '%s' cannot be used to instantiate a full template class with name '%s'.\n", Swig_name_decl(templnode), Getattr(templnode, "sym:name"));
+			    SWIG_WARN_NODE_END(templnode);
+			  }
 
                           if (Strcmp(nodeType(templnode),"class") == 0) {
 
@@ -5322,13 +5333,15 @@ parameter_declarator : declarator def_args {
             }
 	    /* Member function pointers with qualifiers. eg.
 	      int f(short (Funcs::*parm)(bool) const); */
-	    | direct_declarator LPAREN parms RPAREN cv_ref_qualifier {
+	    | direct_declarator LPAREN parms RPAREN qualifiers_exception_specification {
 	      SwigType *t;
 	      $$ = $direct_declarator;
 	      t = NewStringEmpty();
 	      SwigType_add_function(t,$parms);
-	      if ($cv_ref_qualifier.qualifier)
-	        SwigType_push(t, $cv_ref_qualifier.qualifier);
+	      if ($qualifiers_exception_specification.qualifier)
+		SwigType_push(t, $qualifiers_exception_specification.qualifier);
+	      if ($qualifiers_exception_specification.nexcept)
+		SwigType_add_qualifier(t, "noexcept");
 	      if (!$$.have_parms) {
 		$$.parms = $parms;
 		$$.have_parms = 1;
@@ -6624,6 +6637,14 @@ exprsimple     : exprnum
 		  $$.val = NewStringf("alignof%s", scanner_ccode);
 		  Clear(scanner_ccode);
 		  $$.type = T_ULONG;
+		  $$.unary_arg_type = 0;
+	       }
+	       /* noexcept(X) always has type bool. */
+	       | NOEXCEPT LPAREN {
+		  if (skip_balanced('(', ')') < 0) Exit(EXIT_FAILURE);
+		  $$.val = NewStringf("noexcept%s", scanner_ccode);
+		  Clear(scanner_ccode);
+		  $$.type = T_BOOL;
 		  $$.unary_arg_type = 0;
 	       }
 	       | SIZEOF ELLIPSIS LPAREN identifier RPAREN {
