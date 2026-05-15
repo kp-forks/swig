@@ -273,6 +273,12 @@ Version 4.5.0 (in progress)
 	    a warning:
 		Warning 503: Can't wrap 'funky< int >_void' unless renamed to a valid identifier.
 
+2026-04-17: jwuttke
+            #3403 Fix -doxygen: @file block bleeding into the first class
+            docstring. Single-line //! (or ///) comments forming a file-level
+            header (starting with @file) are now correctly discarded instead of
+            being concatenated into the next declaration's docstring.
+
 2026-03-26: Nerixyz
             [Python] #3389 Add missing C annotations and PEP 484 annotations to constants.
 
