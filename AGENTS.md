@@ -71,6 +71,8 @@ Test cases live in `Examples/test-suite/<language>/`. Each test consists of a `.
 
 The shared test makefile is `Examples/test-suite/common.mk` (included by each per-language Makefile). New tests are typically added to `common.mk` in the appropriate `*_TESTCASES` variable.
 
+Python runmes must never use the `assert` statement - `python3 -O` strips asserts and the test would silently pass on a regression. Use the helpers in `Examples/test-suite/python/swig_test_utils.py` instead: `swig_check(lhs, rhs)` for equality checks (prints both values on failure), `swig_assert(condition, msg)` for arbitrary conditions, and `swig_assert_raises(exc_cls)` as a context manager for expected exceptions.
+
 For test suite procedures (per language, single test, parallel runs, valgrind/gdb hooks via `SWIGTOOL` / `RUNTOOL`), use `.agents/skills/swig-test/SKILL.md` as the canonical reference rather than improvising from this summary.
 
 ## Architecture
