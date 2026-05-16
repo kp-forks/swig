@@ -128,7 +128,8 @@ jobs:
     # The NuGet PCRE2 package is build with '/MT' to statically links the the UCRT library.
     # See explanation on linking option:
     # https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features
-    - name: Install NuGet Packages
+    # We use vcpkg with pcre2 on arm64 only. NuGet is much faster, but lack libraries for arm64.
+    - name: Install NuGet and VCPkg Packages
       shell: powershell
       run: |
           nuget install Bison -OutputDirectory C:\Tools
