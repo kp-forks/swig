@@ -3,7 +3,6 @@ import inspect
 import string
 import sys
 import comment_verifier
-from swig_test_utils import swig_check
 
 
 comment_verifier.check(inspect.getdoc(doxygen_misc_constructs.getAddress),
@@ -157,4 +156,5 @@ comment_verifier.check(doxygen_misc_constructs.GroupedMembers.loggingMember1.__d
 comment_verifier.check(doxygen_misc_constructs.GroupedMembers.loggingMember2.__doc__,
     r"""Doc for the second grouped member."""
 )
-swig_check(inspect.getdoc(doxygen_misc_constructs.GroupedMembers), None)
+comment_verifier.check(inspect.getdoc(doxygen_misc_constructs.GroupedMembers),
+    "::GroupedMembers" if doxygen_misc_constructs.is_python_builtin() else "")
